@@ -20,7 +20,7 @@ inline void HelixPoint(double a, double b, double c, double d, double alph, doub
 inline double HelixClosestTime(double a, double b, double c, double d, double alph, double bet, double x, double y, double z)
 {
 	/*Calculate t, during which a helix with given params is the closest to a given point.*/
-	auto MY_PI = std::numbers::pi_v<double>;
+	auto MY_PI = 3.14159265359;
 	double point[3];
 	UnRotate(x, y, z, alph, bet, point);
 	point[0] /= a;

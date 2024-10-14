@@ -1,6 +1,5 @@
 #include <iostream>
 #include <random>
-#include <numbers>
 #include <ctime>
 #include <cassert>
 #include <fstream>
@@ -63,7 +62,7 @@ void GenerateFlawedPoints(int nr_of_points, double a, double b, double c, double
     /*Generate points on a helix with given params but add noise. */
     auto seed = time(nullptr);
     std::mt19937_64 rng(seed);
-    std::uniform_real_distribution<double> uniform(-2 * std::numbers::pi_v<double>, 2 * std::numbers::pi_v<double>);
+    std::uniform_real_distribution<double> uniform(-2 * MY_PI, 2 * MY_PI);
     double output[3];
     double t = 0;
     for (int i = 0; i < nr_of_points; i++)
@@ -156,7 +155,7 @@ void LevenbergMarquardt(double *points, int nr_of_points, double true_b, double 
         }
     }
 
-    for (int i = 0; i < 2000; i++)
+    for (int i = 0; i < 200; i++)
     {
 
         Jacobian(points, nr_of_points, a, b, c, d, alph, bet, jacobian);

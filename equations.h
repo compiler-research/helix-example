@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cassert>
 
-auto MY_PI = std::numbers::pi_v<double>;
+auto MY_PI = 3.14159265359;
 
 double EvaluateSinPlusLin(double A, double B, double C, double D, double x)
 {
@@ -51,7 +51,6 @@ double SolveSinPlusLin(double A, double B, double C, double D, double mi, double
 double NextValPiK(double offs, double x)
 {
 	/*Find the next 2 * PI * k + offset (where k is an integer) that is greater than x.*/
-	auto MY_PI = std::numbers::pi_v<double>;
 
 	if (x < 0)
 	{
