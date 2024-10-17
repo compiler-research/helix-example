@@ -37,10 +37,9 @@ double SquareErr(double *points, int nr_of_points, double a, double b, double c,
     return square_err;
 }
 
-void Points(double *points, int nr_of_points)
+void Points(int nr_of_points, double a, double b, double c, double d, double alph, double bet)
 {
-    /*Generate points on a helix with given params. */
-    double a = 5.2122, b = 2, c = 10.835, d = 17.07055, alph = -3.60384, bet = 1.13255;
+    /*Generate and print out points on a helix with given params. */
     double t = 0;
     for (int i = 0; i < nr_of_points; i++)
     {
@@ -48,13 +47,9 @@ void Points(double *points, int nr_of_points)
         double output[3];
         HelixPoint(a, b, c, d, alph, bet, t, output);
         double x = output[0], y = output[1], z = output[2];
-        points[i * 3] = x;
-        points[i * 3 + 1] = y;
-        points[i * 3 + 2] = z;
+        std::cout << x << " " << y << " " << z << "\n";
     }
-    std::cerr << "Target square err:\n";
-    double square_err = SquareErr(points, nr_of_points, a, b, c, d, alph, bet);
-    std::cerr << square_err << std::endl;
+    std::cout << "end\n";
 }
 
 void GenerateFlawedPoints(int nr_of_points, double a, double b, double c, double d, double alph, double bet, double *points)
@@ -109,17 +104,17 @@ void Jacobian(double *points, int nr_of_points, double a, double b, double c, do
     }
 }
 
-double Lambda(double *points, int nr_of_points, double &a, double &b, double &c, double &d, double &alph, double &bet, double lambda, double &old_square_err, double *results)
+double Lambda(double *points, int nr_of_points, double &a, double &b, double &c, double &d, double &alph, double &bet, double lambda, double &square_err, double *results)
 {
     /*Calculate the damping coefficient lambda for the next iteration of the LevenbergMarquardt function.*/
     double new_lambda;
-    double square_err = SquareErr(points, nr_of_points, a + results[0], b + results[1], c + results[2], d + results[3], alph + results[4], bet + results[5]);
-    std::cerr << "SQUARE ERR " << square_err << std::endl;
-    if ((square_err >= old_square_err) && (lambda < 1000))
+    double new_square_err = SquareErr(points, nr_of_points, a + results[0], b + results[1], c + results[2], d + results[3], alph + results[4], bet + results[5]);
+    // std::cerr << "SQUARE ERR " << new_square_err << std::endl;
+    if ((new_square_err >= square_err) && (lambda < 1000))
         new_lambda = lambda * 10;
     else
     {
-        std::cerr << "IMPROVEMENTS!";
+        // std::cerr << "IMPROVEMENTS!";
         a += results[0];
         b += results[1];
         c += results[2];
@@ -127,7 +122,7 @@ double Lambda(double *points, int nr_of_points, double &a, double &b, double &c,
         alph += results[4];
         bet += results[5];
         new_lambda = lambda / 10;
-        old_square_err = square_err;
+        square_err = new_square_err;
     }
     return new_lambda;
 }
@@ -140,18 +135,19 @@ void LevenbergMarquardt(double *points, int nr_of_points, double true_b, double 
     int diff_params = 6;
     double lambda = 1;
     double lambda_change = 1;
-    double old_square_err;
+    double square_err;
     double jacobian[nr_of_points * diff_params];
     double tjacobian[diff_params * nr_of_points];
     double tjj[diff_params * diff_params];
     double results[diff_params];
+    double counter = 0;
     {
         double dist[nr_of_points];
         DistancesToAllPoints(points, nr_of_points, a, b, c, d, alph, bet, dist);
-        old_square_err = 0;
+        square_err = 0;
         for (int i = 0; i < nr_of_points; i++)
         {
-            old_square_err += (dist[i] * dist[i]);
+            square_err += (dist[i] * dist[i]);
         }
     }
 
@@ -184,23 +180,21 @@ void LevenbergMarquardt(double *points, int nr_of_points, double true_b, double 
         ForwardElim(left_side, diff_params, right_side, forward_elim);
         BackSub(forward_elim, diff_params, right_side, results);
         CheckSolution(left_side, diff_params, unchanged_rs, results);
-        lambda = Lambda(points, nr_of_points, a, b, c, d, alph, bet, lambda, old_square_err, results);
-        std::cerr << "New params: " << a << " " << b << " " << c << " " << d << " " << alph << " " << bet << " ";
-        std::cerr << "lambda: " << lambda << " squares distance: " << old_square_err << std::endl;
-    }
+        double old_square_err = square_err;
+        lambda = Lambda(points, nr_of_points, a, b, c, d, alph, bet, lambda, square_err, results);
+        if (int(square_err) == int(old_square_err) && counter > 10 && square_err < old_square_err)
+            break;
+        else if (int(square_err) == int(old_square_err))
+            counter++;
+        else
+            counter = 0;
+        old_square_err = square_err;
 
-    double t = 0;
+        // std::cerr << "New params: " << a << " " << b << " " << c << " " << d << " " << alph << " " << bet << " ";
+        // std::cerr << "lambda: " << lambda << " squares distance: " << square_err << std::endl;
+    }
     b = true_b;
-    for (int i = 0; i < nr_of_points; i++)
-    {
-        t += 0.1;
-        double output[3];
-        HelixPoint(a, b, c, d, alph, bet, t, output);
-        double x = output[0], y = output[1], z = output[2];
-
-        std::cout << x << " " << y << " " << z << "\n";
-    }
-    std::cout << "end\n";
+    Points(nr_of_points, a, b, c, d, alph, bet);
 }
 
 void GradientDescent(double *points, int nr_of_points)
