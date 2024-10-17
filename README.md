@@ -1,3 +1,4 @@
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/compiler-research/helix-example/HEAD)
 # Helix fitter example
 
 ## Goal
@@ -27,6 +28,3 @@ Running the code and plotting the output can be done by:
 ```
 ./main | python3 graph.py
 ```
-
-
-
